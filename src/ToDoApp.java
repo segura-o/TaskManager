@@ -1,3 +1,4 @@
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -7,6 +8,7 @@ public class ToDoApp {
 
         Scanner scanner = new Scanner(System.in);
         List<Task> tasks = new ArrayList<>();
+        loadTasksFromFile(tasks, "tasks.txt");
         int selection;
 
         boolean isRunning = true;
@@ -20,10 +22,18 @@ public class ToDoApp {
             System.out.println("3.      Mark Task Done ✅️       ");
             System.out.println("4.      Undo Mark Task ↩️");
             System.out.println("5.      Remove Task \uD83D\uDDD1️       ");
-            System.out.println("6.      Save & Exit \uD83D\uDCBE       ");
-            System.out.println("Press a selection (1-6): ");
-            selection = scanner.nextInt();
-            System.out.println(" ");
+            System.out.println("6.      Save \uD83D\uDCBE       ");
+            System.out.println("7.      Exit \uD83D\uDD1A       ");
+            System.out.println("Press a selection (1-7): ");
+            String input = scanner.nextLine();
+
+
+            try {
+                selection = Integer.parseInt(input);
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number between 1 and 7.");
+                continue; // Skip to the next loop iteration
+            }
 
             switch(selection) {
                 case 1 -> addTask(tasks, scanner);
@@ -31,7 +41,8 @@ public class ToDoApp {
                 case 3 -> completeTask(tasks, scanner);
                 case 4 -> undoCompleteTask(tasks, scanner);
                 case 5 -> removeTask(tasks, scanner);
-                case 6 -> System.out.println("You are saving and exiting");
+                case 6 -> saveTasksToFile(tasks, "tasks.txt");
+                case 7 -> isRunning = false;
                 default -> System.out.println("Invalid choice");
             }
         }
@@ -41,7 +52,7 @@ public class ToDoApp {
     }
 
     public static void addTask(List<Task> tasks, Scanner scanner) {
-        scanner.nextLine(); // clear newline left from nextInt
+        //scanner.nextLine(); // clear newline left from nextInt
         System.out.print("Enter task description: ");
         String description = scanner.nextLine();
 
@@ -160,5 +171,43 @@ public class ToDoApp {
         scanner.nextLine();
     }
 
+    public static void saveTasksToFile(List<Task> tasks, String filename) {
+        try {
+            FileWriter writer = new FileWriter(filename);
+
+            for (Task task : tasks) {
+                writer.write(task.getDescription() + ";" + task.isDone() + "\n");
+            }
+
+            writer.close();
+            System.out.println("Tasks saved to file: " + filename);
+        } catch (IOException e) {
+            System.out.println("Error saving tasks: " + e.getMessage());
+        }
+    }
+
+    public static void loadTasksFromFile(List<Task> tasks, String filename) {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(filename));
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(";");
+                if (parts.length == 2) {
+                    String description = parts[0];
+                    boolean isDone = Boolean.parseBoolean(parts[1]);
+                    Task task = new Task(description, isDone);
+                    tasks.add(task);
+                }
+            }
+
+            reader.close();
+            System.out.println("✅ Tasks loaded from file: " + filename);
+        } catch (FileNotFoundException e) {
+            System.out.println("⚠️ No saved tasks found yet — starting fresh.");
+        } catch (IOException e) {
+            System.out.println("❌ Error reading tasks: " + e.getMessage());
+        }
+    }
 
 }

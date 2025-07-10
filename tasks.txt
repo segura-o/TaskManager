@@ -1,0 +1,5 @@
+read;true
+write;false
+run;true
+swim;false
+hike;false
